@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
+use DB;
 
 class Handler extends ExceptionHandler
 {
@@ -49,13 +50,37 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        DB::commit();
+        DB::rollback();
+        
+        $http_status = 500;
+        
+        $error_message  = $exception->getMessage();
+            
+        if ($error_message == 'Unauthenticated.') {
+            $http_status = 401;
+        } else {
+            $get_file = $exception->getFile();
+            $file     = substr($get_file, strpos($get_file, "app\\"));
+            
+            $error_message .= " in " . $file;
+            $error_message .= ":" . $exception->getLine();
+        }
+        
+        $status = $exception->status ?? $http_status;
+        
+        if (method_exists($exception, 'errors')) {
+            foreach ($exception->errors() as $field => $message) {
+                $error_message = "$field: " . $message[0];
+                break;
+            }
+        }
+        
         return response()->json(
             [
                 'success' => false,
-                'message' => $exception->getMessage(),
+                'message' => $error_message
             ],
-            parent::render($request, $exception)->getStatusCode()
+            $status
         );
     }
 }
