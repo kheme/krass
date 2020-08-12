@@ -18,7 +18,7 @@ class CreateRecipientsTable extends Migration
             $table->string('name')->index();
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('bank_code')->index();
-            $table->unsignedBigInteger('account')->index();
+            $table->unsignedBigInteger('account_number')->index();
             $table->timestamps();
         });
     }
