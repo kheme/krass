@@ -45,8 +45,8 @@ class AuthController extends Controller
         $valid_user = User::whereEmail($request->email)
             ->selectRaw('id, email, password')
             ->first();
-        
-        if ($valid_user === false) {
+
+        if ($valid_user == false) {
             return response()->json(
                 [
                     'success' => false,
