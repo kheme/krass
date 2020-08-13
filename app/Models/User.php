@@ -14,7 +14,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Auth\Authenticatable;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Passport\HasApiTokens;
 
@@ -30,15 +30,10 @@ use Laravel\Passport\HasApiTokens;
  */
 class User extends Model
 {
-    use HasApiTokens;
+    use HasApiTokens, Authenticatable;
 
-    protected $fillable = [
-        'name', 'email', 'password',
-    ];
-
-    protected $hidden   = [
-        'password',
-    ];
+    protected $fillable = [ 'name', 'email', 'password',];
+    protected $hidden   = ['password', ];
 
     /**
      * Hash a user's password
