@@ -67,18 +67,10 @@ class UserController
             return response()->json(
                 [
                     'success' => 'false',
-                    'message' => $exception->getMessage(),
+                    'message' => 'Could not create new user',
                 ],
-                400
+                500
             );
         }
-
-        return response()->json(
-            [
-                'success' => 'false',
-                'message' => 'Could not create new user',
-            ],
-            500
-        );
     }
 }
