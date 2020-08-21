@@ -13,6 +13,7 @@
  */
 namespace App\Http\Controllers;
 
+use App\Http\Helpers\Helper;
 use Exception;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -50,7 +51,7 @@ class AuthController extends Controller
             throw new Exception('Invalid access credentials!', 401);
         }
 
-        return successResponse(
+        return Helper::successResponse(
             'User authenticated successfully!',
             [ 'token' => $valid_user->createToken('_kheme_')->accessToken ]
         );
@@ -67,6 +68,6 @@ class AuthController extends Controller
     {
         auth()->user()->token()->revoke();
 
-        return successResponse('Log out successful!');
+        return Helper::successResponse('Log out successful!');
     }
 }
