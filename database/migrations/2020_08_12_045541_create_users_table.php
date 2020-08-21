@@ -13,6 +13,7 @@ class CreateUsersTable extends Migration
      */
     public function up()
     {
+        Schema::dropIfExists('users');
         Schema::create('users', function (Blueprint $table) {
             $table->engine    = 'InnoDB ROW_FORMAT=DYNAMIC';
             $table->collation = 'utf8_unicode_ci';
