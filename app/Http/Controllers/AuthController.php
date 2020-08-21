@@ -13,11 +13,11 @@
  */
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
-use DB;
-use Auth;
 
 /**
  * Main AuthController class
@@ -38,42 +38,21 @@ class AuthController extends Controller
      * 
      * @author Okiemute Omuta <iamkheme@gmail.com>
      * 
-     * @return json
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(request $request)
+    public function store(request $request) : JsonResponse
     {
         $valid_user = User::whereEmail($request->email)
             ->selectRaw('id, email, password')
-            ->first();
-
-        if ($valid_user == false) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'User not found!',
-                ],
-                404
-            );
-        }
+            ->firstOrFail();
         
         if (Hash::check($request->password, $valid_user->password) === false) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Invalid access credentials!',
-                ],
-                404
-            );
+            throw new Exception('Invalid access credentials!', 401);
         }
 
-        return response()->json(
-            [
-                'success' => true,
-                'message' => 'User authenticated successfully!',
-                'data' => [
-                    'token' => $valid_user->createToken('_kheme_')->accessToken
-                ]
-            ]
+        return successResponse(
+            'User authenticated successfully!',
+            [ 'token' => $valid_user->createToken('_kheme_')->accessToken ]
         );
     }
 
@@ -82,17 +61,12 @@ class AuthController extends Controller
      * 
      * @author Okiemute Omuta <iamkheme@gmail.com>
      * 
-     * @return json
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(request $request)
+    public function destroy() : JsonResponse
     {
         auth()->user()->token()->revoke();
-        return response()->json(
-            [
-                'success' => true,
-                'message' => 'Log out successful!',
-            ],
-            404
-        );
+
+        return successResponse('Log out successful!');
     }
 }
