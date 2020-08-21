@@ -58,6 +58,7 @@ class Handler extends ExceptionHandler
         $status_code   = $exception->getCode() ?? $default_code;
         
         if (method_exists($exception, 'errors')) {
+            $status_code = 400;
             foreach ($exception->errors() as $field => $message) {
                 $error_message = "$field: " . $message[0];
                 break;
@@ -73,6 +74,6 @@ class Handler extends ExceptionHandler
             $error_message = trim(substr($error_message, 0, strpos($error_message, '(SQL')));
         }
         
-        return Helper::errorResponse($error_message, max($status_code, $default_code));
+        return Helper::errorResponse($error_message, $status_code == 0 ? $default_code : $status_code);
     }
 }
