@@ -23,7 +23,7 @@
  *
  * @return json
  */
-function successResponse(string $message = null, array $data = [], int $status_code = 200) : \Illuminate\Http\JsonResponse
+function successResponse(string $message = null, ? array $data = [], int $status_code = 200) : \Illuminate\Http\JsonResponse
 {
     $response['success'] = true;
 
@@ -31,8 +31,8 @@ function successResponse(string $message = null, array $data = [], int $status_c
         $response['message'] = $message;
     }
 
-    if ($data) {
-        $response['data'] = $data;
+    if ($data || $data === null) {
+        $response['data'] = $data ?? [];
     }
     
     return response()->json($response, $status_code);
