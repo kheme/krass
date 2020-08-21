@@ -9,7 +9,7 @@
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
  * @license   All rights retained
- * @link      https://twitter.com/kheme
+ * @link      https://github.com/kheme
  */
 namespace App\Http\Controllers;
 
@@ -26,7 +26,7 @@ use DB;
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
  * @license   All rights retained
- * @link      https://twitter.com/kheme
+ * @link      https://github.com/kheme
  */
 class RecipientController extends Controller
 {
