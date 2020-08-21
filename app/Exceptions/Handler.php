@@ -51,7 +51,7 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $exception)
     {
         DB::rollback();
-        
+
         $default_code  = 500;
         $error_message = $exception->getMessage();
         $status_code   = $exception->getCode() ?? $default_code;
@@ -72,6 +72,6 @@ class Handler extends ExceptionHandler
             $error_message = trim(substr($error_message, 0, strpos($error_message, '(SQL')));
         }
         
-        return errorResponse($error_message, $status_code);
+        return errorResponse($error_message, max($status_code, $default_code));
     }
 }
