@@ -13,6 +13,8 @@
  */
 namespace App\Http\Controllers;
 
+use App\Http\Helpers\Helper;
+use App\Http\Requests\AddUserRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -38,39 +40,16 @@ class UserController
      * 
      * @return json
      */
-    public function store(Request $request)
+    public function store(AddUserRequest $request)
     {
-        DB::beginTransaction();
+        $new_user = User::create($request->validatedData());
 
-        try {
-            $new_user = User::create([
-                'name'     => $request->name,
-                'email'    => $request->email,
-                'password' => $request->password,
-            ]);
-
-            DB::commit();
-            
-            return response()->json(
-                [
-                    'success' => true,
-                    'message' => 'User created and authenticated successfully',
-                    'data'    => [
-                        'id'    => $new_user->id,
-                        'token' => $new_user->createToken('_kheme_')->accessToken
-                    ]
-                ]
-            );
-        } catch (\Exception $exception) {
-            DB::rollBack();
-
-            return response()->json(
-                [
-                    'success' => 'false',
-                    'message' => 'Could not create new user',
-                ],
-                500
-            );
-        }
+        return Helper::successResponse(
+            'User created and authenticated successfully',
+            [
+                'id'    => $new_user->id,
+                'token' => $new_user->createToken('_kheme_')->accessToken
+            ]
+        );
     }
 }

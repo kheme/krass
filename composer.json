@@ -6,9 +6,11 @@
     "type": "project",
     "require": {
         "php": "^7.2.5",
+        "ext-redis": "*",
         "dusterio/lumen-passport": "^0.2.19",
         "illuminate/redis": "^7.25",
-        "laravel/lumen-framework": "^7.0"
+        "laravel/lumen-framework": "^7.0",
+        "predis/predis": "^1.1"
     },
     "require-dev": {
         "fzaninotto/faker": "^1.9.1",
