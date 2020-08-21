@@ -8,11 +8,12 @@
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
- * @license   All rights retained
+ * @license   All rights reserved.
  * @link      https://github.com/kheme
  */
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AddRecipientRequest;
 use Cache;
 use Exception;
 use Illuminate\Support\Facades\Http;
@@ -26,7 +27,7 @@ use Illuminate\Http\Request;
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
- * @license   All rights retained
+ * @license   All rights reserved.
  * @link      https://github.com/kheme
  */
 class RecipientController extends Controller
@@ -58,27 +59,17 @@ class RecipientController extends Controller
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request) : JsonResponse
+    public function store(AddRecipientRequest $request) : JsonResponse
     {
         $response = Http::withHeaders([ 'Content-Type' => 'application/json' ])
             ->withToken(env('PAYSTACK_SECRET_KEY'))
-            ->post('https://api.paystack.co/transferrecipient', [
-                'name'           => $request->name,
-                'bank_code'      => $request->bank_code,
-                'account_number' => $request->account_number,
-                'type'           => 'nuban',
-                'currency'       => 'NGN'
-            ])->throw()
+            ->post('https://api.paystack.co/transferrecipient', $request->validatedData())->throw()
             ->json();
 
         $cached_recipients = Cache::get('recipients_' . auth()->id(), []);
         $recipient_code    = $response['data']['recipient_code'];
-
-        $cached_recipients[$recipient_code] = [
-            'name'           => $request->name,
-            'bank_code'      => $request->bank_code,
-            'account_number' => $request->account_number,
-        ];
+        
+        $cached_recipients[$recipient_code] = $request->recipientData();
 
         Cache::put('recipients_' . auth()->id(), $cached_recipients);
         
