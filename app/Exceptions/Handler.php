@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Http\Helpers\Helper;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
@@ -72,6 +73,6 @@ class Handler extends ExceptionHandler
             $error_message = trim(substr($error_message, 0, strpos($error_message, '(SQL')));
         }
         
-        return errorResponse($error_message, max($status_code, $default_code));
+        return Helper::errorResponse($error_message, max($status_code, $default_code));
     }
 }

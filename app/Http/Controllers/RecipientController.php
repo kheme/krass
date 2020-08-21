@@ -13,6 +13,7 @@
  */
 namespace App\Http\Controllers;
 
+use App\Http\Helpers\Helper;
 use App\Http\Requests\AddRecipientRequest;
 use Cache;
 use Exception;
@@ -47,7 +48,7 @@ class RecipientController extends Controller
             $recipients [] = array_merge($recipient_data, [ 'recipient_code' => $recipient_code ]);
         }
 
-        return successResponse(null, ! $recipients ? null : $recipients);
+        return Helper::successResponse(null, ! $recipients ? null : $recipients);
     }
 
     /**
@@ -73,7 +74,7 @@ class RecipientController extends Controller
 
         Cache::put('recipients_' . auth()->id(), $cached_recipients);
         
-        return successResponse('Recipient added successfully!', [ 'recipient_code' => $recipient_code ]);
+        return Helper::successResponse('Recipient added successfully!', [ 'recipient_code' => $recipient_code ]);
     }
 
     /**
@@ -102,6 +103,6 @@ class RecipientController extends Controller
 
         Cache::put('recipients_' . auth()->id(), $cached_recipients);
         
-        return successResponse('Recipient deleted successfully!');
+        return Helper::successResponse('Recipient deleted successfully!');
     }
 }

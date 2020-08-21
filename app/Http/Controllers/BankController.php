@@ -13,6 +13,7 @@
  */
 namespace App\Http\Controllers;
 
+use App\Http\Helpers\Helper;
 use Illuminate\Support\Facades\Http;
 use Cache;
 use Carbon\Carbon;
@@ -40,7 +41,7 @@ class BankController extends Controller
      */
     public function index() : JsonResponse
     {
-        return successResponse(null, Cache::remember(
+        return Helper::successResponse(null, Cache::remember(
             'paystack_banks',
             Carbon::now()->endOfDay(),
             function () {
