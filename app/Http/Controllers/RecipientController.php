@@ -8,15 +8,17 @@
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
- * @license   All rights retained
- * @link      https://twitter.com/kheme
+ * @license   All rights reserved.
+ * @link      https://github.com/kheme
  */
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Request;
+use App\Http\Requests\AddRecipientRequest;
 use Cache;
-use DB;
+use Exception;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Main RecipientController class
@@ -25,8 +27,8 @@ use DB;
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
- * @license   All rights retained
- * @link      https://twitter.com/kheme
+ * @license   All rights reserved.
+ * @link      https://github.com/kheme
  */
 class RecipientController extends Controller
 {
@@ -35,24 +37,17 @@ class RecipientController extends Controller
      * 
      * @author Okiemute Omuta <iamkheme@gmail.com>
      * 
-     * @return json
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index() : JsonResponse
     {
         $recipients = [];
 
-        foreach (Cache::get('recipients_' . auth()->id() ?? 0) as $recipient_code => $recipient_data) {
-            $temp = $recipient_data;
-            $temp['recipient_code'] = $recipient_code;
-            $recipients[] = $temp;
+        foreach (Cache::get('recipients_' . auth()->id(), []) as $recipient_code => $recipient_data) {
+            $recipients [] = array_merge($recipient_data, [ 'recipient_code' => $recipient_code ]);
         }
 
-        return response()->json(
-            [
-                'success' => true,
-                'data'    => $recipients,
-            ]
-        );
+        return successResponse(null, ! $recipients ? null : $recipients);
     }
 
     /**
@@ -62,51 +57,23 @@ class RecipientController extends Controller
      * 
      * @author Okiemute Omuta <iamkheme@gmail.com>
      * 
-     * @return json
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(AddRecipientRequest $request) : JsonResponse
     {
-        $cached_recipients = Cache::get('recipients_' . auth()->id() ?? 0) ?? [];
+        $response = Http::withHeaders([ 'Content-Type' => 'application/json' ])
+            ->withToken(env('PAYSTACK_SECRET_KEY'))
+            ->post('https://api.paystack.co/transferrecipient', $request->validatedData())->throw()
+            ->json();
 
-        try {
-            $response = Http::withHeaders([ 'Content-Type' => 'application/json' ])
-                ->withToken(env('PAYSTACK_SECRET_KEY'))
-                ->post('https://api.paystack.co/transferrecipient', [
-                    'name'           => $request->name,
-                    'bank_code'      => $request->bank_code,
-                    'account_number' => $request->account_number,
-                    'type'           => 'nuban',
-                    'currency'       => 'NGN'
-                ])->json();
+        $cached_recipients = Cache::get('recipients_' . auth()->id(), []);
+        $recipient_code    = $response['data']['recipient_code'];
+        
+        $cached_recipients[$recipient_code] = $request->recipientData();
 
-            if ($response['status']) {
-                $recipient_code = $response['data']['recipient_code'];
-
-                $cached_recipients[$recipient_code] = [
-                    'name'           => $request->name,
-                    'bank_code'      => $request->bank_code,
-                    'account_number' => $request->account_number,
-                ];
-
-                Cache::put('recipients_' . auth()->id() ?? 0, $cached_recipients);
-                
-                return response()->json(
-                    [
-                        'success' => true,
-                        'message' => 'Recipient added successfully!',
-                        'data'    => [ 'recipient_code' => $recipient_code ]
-                    ]
-                );
-            }
-        } catch (\Exception $exception) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'There was an error adding recipient'
-                ],
-                400
-            );
-        }
+        Cache::put('recipients_' . auth()->id(), $cached_recipients);
+        
+        return successResponse('Recipient added successfully!', [ 'recipient_code' => $recipient_code ]);
     }
 
     /**
@@ -116,38 +83,25 @@ class RecipientController extends Controller
      * 
      * @author Okiemute Omuta <iamkheme@gmail.com>
      * 
-     * @return json
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(string $recipient_code)
+    public function destroy(string $recipient_code) : JsonResponse
     {
-        $cached_recipients = Cache::get('recipients_' . auth()->id() ?? 0);
+        $cached_recipients = Cache::get('recipients_' . auth()->id(), []);
 
-        try {
-            $response = Http::withHeaders([ 'Content-Type' => 'application/json' ])
-                ->withToken(env('PAYSTACK_SECRET_KEY'))
-                ->delete('https://api.paystack.co/transferrecipient/' . $recipient_code)
-                ->json();
-
-            if ($response['status']) {
-                unset($cached_recipients[$recipient_code]);
-
-                Cache::put('recipients_' . auth()->id() ?? 0, $cached_recipients);
-                
-                return response()->json(
-                    [
-                        'success' => true,
-                        'message' => 'Recipient deleted successfully!',
-                    ]
-                );
-            }
-        } catch (\Exception $exception) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'There was an error deleting recipient'
-                ],
-                400
-            );
+        if (! isset($cached_recipients[$recipient_code])) {
+            throw new Exception('Recipient not found!', 404);
         }
+
+        Http::withHeaders([ 'Content-Type' => 'application/json' ])
+            ->withToken(env('PAYSTACK_SECRET_KEY'))
+            ->delete('https://api.paystack.co/transferrecipient/' . $recipient_code)
+            ->throw();
+
+        unset($cached_recipients[$recipient_code]);
+
+        Cache::put('recipients_' . auth()->id(), $cached_recipients);
+        
+        return successResponse('Recipient deleted successfully!');
     }
 }

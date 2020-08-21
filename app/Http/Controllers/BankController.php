@@ -8,14 +8,16 @@
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
- * @license   All rights retained
- * @link      https://twitter.com/kheme
+ * @license   All rights reserved.
+ * @link      https://github.com/kheme
  */
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
 use Cache;
+use Carbon\Carbon;
 use DB;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Main BankController class
@@ -24,30 +26,26 @@ use DB;
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
- * @license   All rights retained
- * @link      https://twitter.com/kheme
+ * @license   All rights reserved.
+ * @link      https://github.com/kheme
  */
 class BankController extends Controller
 {
     /**
-     * Return a list of banks cached from Paystack
+     * Retrieve a list of banks from Paystack and cache until the end of the day
      * 
      * @author Okiemute Omuta <iamkheme@gmail.com>
      * 
-     * @return json
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index() : JsonResponse
     {
-        return response()->json(
-            [
-                'success' => true,
-                'data'    =>  Cache::rememberForever(
-                    'paystack_banks',
-                    function () {
-                        return Http::get('https://api.paystack.co/bank')->json()['data'];
-                    }
-                )
-            ]
-        );
+        return successResponse(null, Cache::remember(
+            'paystack_banks',
+            Carbon::now()->endOfDay(),
+            function () {
+                return Http::get('https://api.paystack.co/bank')->throw()->json()['data'];
+            }
+        ));
     }
 }
