@@ -8,7 +8,7 @@
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
- * @license   All rights retained
+ * @license   All rights reserved.
  * @link      https://github.com/kheme
  */
 namespace App\Http\Controllers;
@@ -25,7 +25,7 @@ use DB;
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
- * @license   All rights retained
+ * @license   All rights reserved.
  * @link      https://github.com/kheme
  */
 class TransferController extends Controller
