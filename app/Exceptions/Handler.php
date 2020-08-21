@@ -52,21 +52,9 @@ class Handler extends ExceptionHandler
     {
         DB::rollback();
         
-        $http_status = 500;
-        
-        $error_message  = $exception->getMessage();
-            
-        if ($error_message == 'Unauthenticated.') {
-            $http_status = 401;
-        } else {
-            $get_file = $exception->getFile();
-            $file     = substr($get_file, strpos($get_file, "app\\"));
-            
-            $error_message .= " in " . $file;
-            $error_message .= ":" . $exception->getLine();
-        }
-        
-        $status = $exception->status ?? $http_status;
+        $default_code  = 500;
+        $error_message = $exception->getMessage();
+        $status_code   = $exception->getCode() ?? $default_code;
         
         if (method_exists($exception, 'errors')) {
             foreach ($exception->errors() as $field => $message) {
@@ -74,13 +62,16 @@ class Handler extends ExceptionHandler
                 break;
             }
         }
+
+        if ($exception instanceof ModelNotFoundException) {
+            $error_message = str_replace('App\\Models\\', '', $exception->getModel()) . ' not found!';
+            $status_code   = 404;
+        }
+
+        if (strpos($error_message, '(SQL') !== false) {
+            $error_message = trim(substr($error_message, 0, strpos($error_message, '(SQL')));
+        }
         
-        return response()->json(
-            [
-                'success' => false,
-                'message' => $error_message
-            ],
-            $status
-        );
+        return errorResponse($error_message, $status_code);
     }
 }
