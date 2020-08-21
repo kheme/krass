@@ -40,11 +40,11 @@ class BankController extends Controller
      */
     public function index() : JsonResponse
     {
-        return successResponse(Cache::remember(
+        return successResponse(null, Cache::remember(
             'paystack_banks',
             Carbon::now()->endOfDay(),
             function () {
-                return Http::get('https://api.paystack.co/bank')->json()['data'];
+                return Http::get('https://api.paystack.co/bank')->throw()->json()['data'];
             }
         ));
     }
