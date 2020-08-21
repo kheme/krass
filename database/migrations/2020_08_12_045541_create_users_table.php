@@ -14,6 +14,10 @@ class CreateUsersTable extends Migration
     public function up()
     {
         Schema::create('users', function (Blueprint $table) {
+            $table->engine    = 'InnoDB ROW_FORMAT=DYNAMIC';
+            $table->collation = 'utf8_unicode_ci';
+            $table->charset   = 'utf8';
+
             $table->unsignedBigInteger('id', true);
             $table->string('name');
             $table->string('email')->unique();
