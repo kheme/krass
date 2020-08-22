@@ -1,6 +1,6 @@
 <?php
 /**
- * Form request validator for POST /register
+ * Form request validator for POST /transfers
  *
  * PHP version 7
  *
@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * Main AddUserRequest class
+ * Main CreateTransferRequest class
  *
  * @category  Validator
  * @package   App\Http\Requests
@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Validator;
  * @license   All rights reserved.
  * @link      https://github.com/kheme
  */
-class AddUserRequest
+class CreateTransferRequest
 {   
     protected $validator;
 
@@ -42,9 +42,9 @@ class AddUserRequest
     public function __construct(Request $request)
     {
         $this->validator = Validator::make($request->all(), [
-            'name'     => 'required',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required',
+            'reason'     => 'required',
+            'amount'    => 'required|integer',
+            'recipient' => 'required',
         ]);
     }
 
@@ -57,6 +57,9 @@ class AddUserRequest
      */
     public function validatedData() : array
     {
-        return $this->validator->validated();
+        return array_merge($this->validator->validated(), [
+            'source'   => 'balance',
+            'currency' => 'NGN',
+        ]);
     }
 }
