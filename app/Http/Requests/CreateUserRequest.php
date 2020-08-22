@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * Main AddUserRequest class
+ * Main CreateUserRequest class
  *
  * @category  Validator
  * @package   App\Http\Requests
@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Validator;
  * @license   All rights reserved.
  * @link      https://github.com/kheme
  */
-class AddUserRequest
+class CreateUserRequest
 {   
     protected $validator;
 

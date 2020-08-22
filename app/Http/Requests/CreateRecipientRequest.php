@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * Main AddRecipientRequest class
+ * Main CreateRecipientRequest class
  *
  * @category  Validator
  * @package   App\Http\Requests
@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Validator;
  * @license   All rights reserved.
  * @link      https://github.com/kheme
  */
-class AddRecipientRequest
+class CreateRecipientRequest
 {   
     protected $validator;
     protected $transfer_data;
@@ -63,7 +63,7 @@ class AddRecipientRequest
      */
     public function validatedData() : array
     {
-        return array_merge($this->validator->validated(), $this->transfer_data );
+        return array_merge($this->validator->validated(), $this->transfer_data);
     }
 
     /**
