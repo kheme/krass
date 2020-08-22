@@ -14,10 +14,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Helpers\Helper;
-use App\Http\Requests\AddUserRequest;
-use Illuminate\Http\Request;
+use App\Http\Requests\CreateUserRequest;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Main UserController class
@@ -40,7 +38,7 @@ class UserController
      * 
      * @return json
      */
-    public function store(AddUserRequest $request)
+    public function store(CreateUserRequest $request)
     {
         $new_user = User::create($request->validatedData());
 
