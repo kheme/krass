@@ -61,17 +61,11 @@ class RecipientController extends Controller
      */
     public function store(CreateRecipientRequest $request) : JsonResponse
     {
-        $response = Http::withHeaders([ 'Content-Type' => 'application/json' ])
-            ->withToken(env('PAYSTACK_SECRET_KEY'))
-            ->post('https://api.paystack.co/transferrecipient', $request->validatedData());
-
-        if (! $response->successful()) {
-            throw new Exception($response->json()['message'], $response->status());
-        }
-
-        $cached_recipients = Cache::get('recipients_' . auth()->id(), []);
-        $recipient_code    = $response->json()['data']['recipient_code'];
+        $response = $this->sendRequest('post', 'https://api.paystack.co/transferrecipient', $request->validatedData());
         
+        $cached_recipients = Cache::get('recipients_' . auth()->id(), []);
+        $recipient_code    = $response['data']['recipient_code'];
+
         $cached_recipients[$recipient_code] = $request->recipientData();
 
         Cache::put('recipients_' . auth()->id(), $cached_recipients);
@@ -96,13 +90,7 @@ class RecipientController extends Controller
             throw new Exception('Recipient not found!', 404);
         }
 
-        $response = Http::withHeaders([ 'Content-Type' => 'application/json' ])
-            ->withToken(env('PAYSTACK_SECRET_KEY'))
-            ->delete('https://api.paystack.co/transferrecipient/' . $recipient_code);
-
-        if (! $response->successful()) {
-            throw new Exception($response->json()['message'], $response->status());
-        }
+        $this->sendRequest('delete', 'https://api.paystack.co/transferrecipient/' . $recipient_code);
 
         unset($cached_recipients[$recipient_code]);
 
