@@ -74,15 +74,9 @@ class TransferController extends Controller
     {
         $cached_transfers = Cache::get('transfers_' . auth()->id(), []);
         
-        $response = Http::withHeaders([ 'Content-Type' => 'application/json' ])
-                ->withToken(env('PAYSTACK_SECRET_KEY'))
-                ->post('https://api.paystack.co/transfer', $request->validatedData());
+        $response = $this->sendRequest('post', 'https://api.paystack.co/transfer', $request->validatedData());
 
-        if (! $response->successful()) {
-            throw new Exception($response->json()['message'], $response->status());
-        }
-
-        $cached_transfers[] = $response->json()['data'];
+        $cached_transfers[] = $response['data'];
 
         Cache::put('transfers_' . auth()->id(), $cached_transfers);
         
