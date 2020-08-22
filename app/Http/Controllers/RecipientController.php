@@ -13,13 +13,12 @@
  */
 namespace App\Http\Controllers;
 
-use App\Http\Helpers\Helper;
-use App\Http\Requests\AddRecipientRequest;
 use Cache;
 use Exception;
+use App\Http\Helpers\Helper;
+use App\Http\Requests\CreateRecipientRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * Main RecipientController class
@@ -60,15 +59,18 @@ class RecipientController extends Controller
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(AddRecipientRequest $request) : JsonResponse
+    public function store(CreateRecipientRequest $request) : JsonResponse
     {
         $response = Http::withHeaders([ 'Content-Type' => 'application/json' ])
             ->withToken(env('PAYSTACK_SECRET_KEY'))
-            ->post('https://api.paystack.co/transferrecipient', $request->validatedData())->throw()
-            ->json();
+            ->post('https://api.paystack.co/transferrecipient', $request->validatedData());
+
+        if (! $response->successful()) {
+            throw new Exception($response->json()['message'], $response->status());
+        }
 
         $cached_recipients = Cache::get('recipients_' . auth()->id(), []);
-        $recipient_code    = $response['data']['recipient_code'];
+        $recipient_code    = $response->json()['data']['recipient_code'];
         
         $cached_recipients[$recipient_code] = $request->recipientData();
 
@@ -94,10 +96,13 @@ class RecipientController extends Controller
             throw new Exception('Recipient not found!', 404);
         }
 
-        Http::withHeaders([ 'Content-Type' => 'application/json' ])
+        $response = Http::withHeaders([ 'Content-Type' => 'application/json' ])
             ->withToken(env('PAYSTACK_SECRET_KEY'))
-            ->delete('https://api.paystack.co/transferrecipient/' . $recipient_code)
-            ->throw();
+            ->delete('https://api.paystack.co/transferrecipient/' . $recipient_code);
+
+        if (! $response->successful()) {
+            throw new Exception($response->json()['message'], $response->status());
+        }
 
         unset($cached_recipients[$recipient_code]);
 
