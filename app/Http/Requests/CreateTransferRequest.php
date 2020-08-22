@@ -58,7 +58,7 @@ class CreateTransferRequest
     public function validatedData() : array
     {
         return array_merge($this->validator->validated(), [
-            'source'   => 'source',
+            'source'   => 'balance',
             'currency' => 'NGN',
         ]);
     }
