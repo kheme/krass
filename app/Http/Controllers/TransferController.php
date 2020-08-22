@@ -58,7 +58,7 @@ class TransferController extends Controller
         
         $transfers = $filtered_transfers ?? $cached_transfers;
 
-        return Helper::successResponse(null, $transfers);
+        return Helper::successResponse(null, ! $transfers ? null : $transfers);
     }
 
     /**
